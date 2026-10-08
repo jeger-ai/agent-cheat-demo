@@ -6,6 +6,8 @@
 set -uo pipefail
 cd "$(dirname "$0")"
 CAGE="${CAGE:-npx -y -p @jeger-ai/opengantry gantry cage}"
+# Keep npm's own notices (update banner, engine warnings) out of the recording.
+export npm_config_update_notifier=false npm_config_loglevel=error
 step() { printf '\n\033[1m$ %s\033[0m\n' "$1"; sleep "${DEMO_PAUSE:-1}"; }
 
 git checkout -q -- .github/workflows/ci.yml package-lock.json
