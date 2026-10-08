@@ -10,6 +10,9 @@ same every time.
 
 ## Run it
 
+> Needs the `@jeger-ai/opengantry` release that ships `gantry cage`. Until it's on npm, use a local
+> build: `CAGE="node ../opengantry/dist/cli/index.js cage" ./demo.sh`.
+
 ```bash
 git clone https://github.com/jeger-ai/agent-cheat-demo && cd agent-cheat-demo
 ./demo.sh
