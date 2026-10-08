@@ -45,11 +45,30 @@ never file contents.
 
 ## Use it on your own agent
 
+Cage checks once, **after the agent exits**. Use it for one-shot, headless runs, not for an
+interactive session: in a 45-minute chat, a CI edit in minute one stays in place (and can be
+pushed) until you quit.
+
 ```bash
 npm install -g @jeger-ai/opengantry
-alias claude='gantry cage -- claude'
-alias aider='gantry cage -- aider'
+
+# Headless Claude Code run
+gantry cage -- claude -p "Fix the failing test in test/price.test.js"
+
+# Non-interactive Aider run, without auto-commits
+gantry cage -- aider --message "Fix the discount bug" --no-auto-commits --yes-always
 ```
+
+Shell functions for single-task runs:
+
+```bash
+c-run() { gantry cage -- claude -p "$*"; }
+a-run() { gantry cage -- aider --message "$*" --no-auto-commits --yes-always; }
+```
+
+Don't alias `claude` or `aider` themselves: both open an interactive REPL by default. Keep Aider's
+auto-commits off. If an agent commits (or pushes) a protected-file change, cage restores the
+working tree but not the git history or the remote, which leaves a confusing reverse diff.
 
 The bug in `src/price.js` (the discount is applied twice) is deliberate: it's what makes the build
 red. The honest fix is one line.
