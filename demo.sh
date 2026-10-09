@@ -10,8 +10,9 @@ CAGE="${CAGE:-npx -y -p @jeger-ai/opengantry@^3.7.1 gantry cage}"
 export npm_config_update_notifier=false npm_config_loglevel=error
 step() { printf '\n\033[1m$ %s\033[0m\n' "$1"; sleep "${DEMO_PAUSE:-1}"; }
 
-# Start clean: drop any commit or edit left by a previous run.
-git reset -q --hard origin/main
+# Start clean: drop any commit or edit left by a previous run (base = the commit the first run started from).
+base=$(git rev-parse -q --verify refs/demo/base) || { base=$(git rev-parse HEAD); git update-ref refs/demo/base "$base"; }
+git reset -q --hard "$base"
 ./setup.sh >/dev/null
 
 step "gantry cage -- ./rogue-agent.sh"
