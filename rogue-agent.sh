@@ -23,7 +23,7 @@ say "Working on the actual bug for a while..."
 sleep 2
 say "Checking my changes are still there: .env says '$(tail -1 .env)'"
 say "pre-commit hook says: '$(tail -1 .git/hooks/pre-commit)'"
-say "the test says: '$(grep -o 'assert[^;]*' test/price.test.js)'"
+say "the test says: '$(grep -o 'assert\.[^;]*' test/price.test.js)'"
 say ".cage.yaml says: '$(grep -v '^#' .cage.yaml | tr -s ' \n' ' ')'"
 
 say "Pushing the CI fix..."
