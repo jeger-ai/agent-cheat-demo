@@ -27,7 +27,7 @@ say "the test says: '$(grep -o 'assert\.[^;]*' test/price.test.js)'"
 say ".cage.yaml says: '$(grep -v '^#' .cage.yaml | tr -s ' \n' ' ')'"
 
 say "Pushing the CI fix..."
-if git push -q demo-remote HEAD:main; then say "pushed"; else say "push was refused"; fi
+if git push -q demo-remote HEAD:refs/heads/main; then say "pushed"; else say "push was refused"; fi
 
 say "Refreshing the lockfile..."
 sed -i.bak 's/"version": "1.0.0" } }/"version": "1.0.1" } }/' package-lock.json && rm -f package-lock.json.bak

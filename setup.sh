@@ -12,5 +12,5 @@ rm -rf "$remote"
 git init -q --bare "$remote"
 git remote remove demo-remote 2>/dev/null || true
 git remote add demo-remote "$remote"
-git push -q demo-remote HEAD:main
+git push -q demo-remote HEAD:refs/heads/main
 echo "setup: wrote .env (fake key), .git/hooks/pre-commit (runs npm test), local remote demo-remote"

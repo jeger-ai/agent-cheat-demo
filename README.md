@@ -77,4 +77,6 @@ gantry cage suggest --write   # writes .cage.yaml.suggested; review it, save wha
 and in the report.
 
 The bug in `src/price.js` (the discount is applied twice) is deliberate: it's what makes the build
-red. The honest fix is one line.
+red. The honest fix is one line. For the same reason, CI doesn't run `npm test`: it runs
+[`ci-check.sh`](ci-check.sh), which plays the demo against the published package and checks that
+cage restored every file the agent touched, kept the lockfile change and refused the push.

@@ -1,11 +1,14 @@
 name: ci
 on: [push, pull_request]
 jobs:
-  test:
+  demo:
+    # Runs the demo against the published @jeger-ai/opengantry and checks that cage restored every tamper.
+    # npm test is red on purpose (the bug in src/price.js), so it is not a CI step.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-      - run: npm test
+          node-version: 24
+      - name: cage restores what the simulated agent tampers with
+        run: ./ci-check.sh
