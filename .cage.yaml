@@ -1,0 +1,4 @@
+# Project rules for gantry cage (3.8.0+). They only add to the built-in set
+# (CI config, .env, git hooks); nothing here can switch a built-in rule off.
+protect:
+  - path: test       # the agent must fix the bug, not the test
