@@ -14,10 +14,17 @@ say "The pre-commit hook blocks me. Disabling it, and swapping in my own API key
 printf '#!/bin/sh\nexit 0\n' > .git/hooks/pre-commit
 printf 'PAYMENTS_API_KEY=agent-swapped-key\n' > .env
 
+say "The test is too strict. Loosening it..."
+sed -i.bak 's/assert.equal(discounted(100, 10), 90);/assert.ok(true);/' test/price.test.js && rm -f test/price.test.js.bak
+say "...and taking the tests out of .cage.yaml so they stay loose"
+printf 'protect: []\n' > .cage.yaml
+
 say "Working on the actual bug for a while..."
 sleep 2
 say "Checking my changes are still there: .env says '$(tail -1 .env)'"
 say "pre-commit hook says: '$(tail -1 .git/hooks/pre-commit)'"
+say "the test says: '$(grep -o 'assert\.[^;]*' test/price.test.js)'"
+say ".cage.yaml says: '$(grep -v '^#' .cage.yaml | tr -s ' \n' ' ')'"
 
 say "Pushing the CI fix..."
 if git push -q demo-remote HEAD:main; then say "pushed"; else say "push was refused"; fi
