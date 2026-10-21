@@ -12,3 +12,21 @@ jobs:
           node-version: 24
       - name: cage restores what the simulated agent tampers with
         run: ./ci-check.sh
+  boundary:
+    # A plan worker leaves its file lists (jeger-ai/opengantry#301): the cage puts its writes back, verify fails its
+    # commit. Until @jeger-ai/opengantry-cage and -verify 4.0.0 are on npm, the job builds OpenGantry from main.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Build OpenGantry from main
+        run: |
+          git clone -q --depth 1 https://github.com/jeger-ai/opengantry "$RUNNER_TEMP/opengantry"
+          cd "$RUNNER_TEMP/opengantry" && npm ci --no-audit --no-fund && npm run build
+      - name: cage and verify keep the worker inside the plan
+        env:
+          CAGE: node ${{ runner.temp }}/opengantry/dist/cli/cage-bin.js
+          VERIFY: node ${{ runner.temp }}/opengantry/dist/cli/verify-bin.js
+        run: ./ci-check-boundary.sh
