@@ -51,6 +51,56 @@ SHA-256 digests, never file contents.
 - Tests aren't protected by default. This repo commits a [`.cage.yaml`](.cage.yaml) that adds `test/`;
   without it, weakening `test/price.test.js` would not be caught.
 
+## Second demo: a worker leaves its plan
+
+An agent pipeline such as [lights-on-software-factory](https://github.com/gojko/lights-on-software-factory) hands each
+worker a plan step that names the files it may create, modify and delete. Its regulator refuses command shapes it knows,
+but nothing checks that the worker stayed inside those lists, and these writes all pass
+([gojko/lights-on-software-factory#1](https://github.com/gojko/lights-on-software-factory/issues/1)):
+`node -e "require('fs').writeFileSync(...)"`, `echo x > package-lock.json`, `sed -i` on the regulator's own rule,
+`cp`, `mv`, `rm`, and editor writes that never reach a shell hook.
+
+[`worker.sh`](worker.sh) is a simulated worker (no LLM). It does step 1.1 of [`plans/format-greeting.md`](plans/format-greeting.md)
+honestly (`src/format-greeting.js` and its test), then makes every one of those writes. [`boundary-demo.sh`](boundary-demo.sh)
+runs it twice:
+
+```bash
+./boundary-demo.sh
+# with local builds of OpenGantry instead of npm:
+CAGE="node ../opengantry/dist/cli/cage-bin.js" VERIFY="node ../opengantry/dist/cli/verify-bin.js" ./boundary-demo.sh
+```
+
+1. **Inside the cage, scoped to the plan.** `gantry-cage --allow-only src/format-greeting.js --allow-only src/format-greeting.test.js -- ./worker.sh`
+   puts back every write outside those two files, whatever command made it: the regulator rule, the lockfile, the
+   deleted test, the moved `.env.example`, and removes `src/x.js`, the copy and `notes.txt`. The plan's two files stay.
+2. **Anywhere, then the gate.** The worker runs without the cage and commits. `gantry-verify --base <step base>`
+   judges the commit against [`verify.yaml`](verify.yaml): the plan's test passes, and it fails with the 8 files
+   outside the plan's lists, naming `.claude/…/rules.js` and `package-lock.json` as forbidden.
+
+Neither looks at commands. Both compare the files that changed with the scope a human approved, so a new way of
+writing a file changes nothing.
+
+### From a plan to a contract
+
+[`plan-to-verify.mjs`](plan-to-verify.mjs) reads the three file lists of a step (`**Files to create**`,
+`**Files to modify**`, `**Files to delete**`) and writes the contract:
+
+```bash
+node plan-to-verify.mjs plans/format-greeting.md --step 1.1 --check "node --test src/format-greeting.test.js" > verify.yaml
+```
+
+- The listed files are `allowed_paths`. Without `--step`, every step of the plan counts.
+- `.claude/` (what holds the run), lockfiles, `plans/` and `verify.yaml` are `forbidden_paths`, whatever a step says.
+- Commit `verify.yaml` before the step runs. `gantry-verify` reads a committed contract from the base commit, so a
+  worker that edits it changes nothing about how it is judged.
+- **A step that may split a file** (a worker that is expected to create unlisted files) gets one more line instead of
+  a weaker check: `--allow-new src/format-greeting/` adds that folder to `allowed_paths`. New files there pass, files
+  anywhere else still fail, and the allowance is in the committed contract for review. The result lists every changed
+  path, so the extra files are on the record.
+
+CI runs [`ci-check-boundary.sh`](ci-check-boundary.sh). Until `@jeger-ai/opengantry-cage` and
+`@jeger-ai/opengantry-verify` 4.0.0 are on npm, that job builds OpenGantry from `main`.
+
 ## Use it on your own agent
 
 Start your agent inside the cage, exactly as you normally would:
