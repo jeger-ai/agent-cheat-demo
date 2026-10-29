@@ -80,6 +80,20 @@ CAGE="node ../opengantry/dist/cli/cage-bin.js" VERIFY="node ../opengantry/dist/c
 Neither looks at commands. Both compare the files that changed with the scope a human approved, so a new way of
 writing a file changes nothing.
 
+### The same run, in plain words
+
+[`story.sh`](story.sh) runs the same two acts with the same published packages and tells the result for people who
+don't read terminal output. Every line on screen is derived from the real cage and verify output:
+
+![The agent was told to change 2 files and changed 10: the cage puts 8 changes back, verify blocks the commit](docs/story.gif)
+
+```bash
+./story.sh                                   # STORY_PAUSE=0 skips the pauses
+asciinema rec story.cast -c ./story.sh       # record it yourself
+```
+
+Like `boundary-demo.sh`, it resets the checkout to the step base, so commit your own changes first.
+
 ### From a plan to a contract
 
 `gantry adapt --from lights-on` reads the three file lists of a step (`**Files to create**`, `**Files to modify**`,
@@ -100,7 +114,8 @@ npx -p @jeger-ai/opengantry gantry adapt --from lights-on plans/format-greeting.
   path, so the extra files are on the record.
 
 CI runs [`ci-check-boundary.sh`](ci-check-boundary.sh) against the published `@jeger-ai/opengantry-cage`,
-`@jeger-ai/opengantry-verify` and `@jeger-ai/opengantry` 4.x.
+`@jeger-ai/opengantry-verify` and `@jeger-ai/opengantry` 4.x. It also runs `story.sh` and checks that the story still says what the
+tools report: 8 changes put back, 8 files outside the plan, the commit blocked.
 
 ## Use it on your own agent
 
