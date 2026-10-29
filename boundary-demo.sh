@@ -4,11 +4,13 @@
 # Act 2: the worker runs anywhere and commits; gantry-verify judges the commit against verify.yaml.
 #   asciinema rec boundary.cast -c ./boundary-demo.sh
 # To use local builds instead of npm:
-#   CAGE="node ../opengantry/dist/cli/cage-bin.js" VERIFY="node ../opengantry/dist/cli/verify-bin.js" ./boundary-demo.sh
+#   CAGE="node ../opengantry/dist/cli/cage-bin.js" VERIFY="node ../opengantry/dist/cli/verify-bin.js" \
+#   GANTRY="node ../opengantry/dist/cli/index.js" ./boundary-demo.sh
 set -uo pipefail
 cd "$(dirname "$0")"
 CAGE="${CAGE:-npx -y @jeger-ai/opengantry-cage@^4}"
 VERIFY="${VERIFY:-npx -y @jeger-ai/opengantry-verify@^4}"
+GANTRY="${GANTRY:-npx -y -p @jeger-ai/opengantry@^4 gantry}"
 export npm_config_update_notifier=false npm_config_loglevel=error
 step() { printf '\n\033[1m$ %s\033[0m\n' "$1"; sleep "${DEMO_PAUSE:-1}"; }
 
@@ -22,8 +24,9 @@ fi
 reset() { git reset -q --hard "$base" && rm -f src/format-greeting.js src/format-greeting.test.js src/x.js src/price-copy.js notes.txt .env.sample; }
 reset
 # The scope comes from the plan and is committed before the step runs (verify.yaml at the base).
-node plan-to-verify.mjs plans/format-greeting.md --step 1.1 --check "node --test src/format-greeting.test.js" | cmp -s - verify.yaml \
-  || { echo "boundary-demo: verify.yaml is not what plans/format-greeting.md says; regenerate it with plan-to-verify.mjs" >&2; exit 2; }
+adapt=(adapt --from lights-on plans/format-greeting.md --step 1.1 --check "node --test src/format-greeting.test.js")
+$GANTRY "${adapt[@]}" 2>/dev/null | cmp -s - verify.yaml \
+  || { echo "boundary-demo: verify.yaml is not what plans/format-greeting.md says; regenerate it: gantry ${adapt[*]} --out verify.yaml" >&2; exit 2; }
 scope=(--allow-only src/format-greeting.js --allow-only src/format-greeting.test.js)
 
 printf '\033[1mAct 1: the worker inside the cage, scoped to the plan\033[0m\n'
