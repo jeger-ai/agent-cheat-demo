@@ -11,7 +11,7 @@ dir, never to GitHub.
 
 ## Run it
 
-Needs `@jeger-ai/opengantry` 3.8.0 or later (Node 24+ recommended). Record it with
+Needs `@jeger-ai/opengantry` 4.0.0 or later (Node 24+). Record it with
 `asciinema rec demo.cast -c ./demo.sh`.
 
 ```bash
@@ -82,15 +82,16 @@ writing a file changes nothing.
 
 ### From a plan to a contract
 
-[`plan-to-verify.mjs`](plan-to-verify.mjs) reads the three file lists of a step (`**Files to create**`,
-`**Files to modify**`, `**Files to delete**`) and writes the contract:
+`gantry adapt --from lights-on` reads the three file lists of a step (`**Files to create**`, `**Files to modify**`,
+`**Files to delete**`), writes the contract and prints the matching cage scope:
 
 ```bash
-node plan-to-verify.mjs plans/format-greeting.md --step 1.1 --check "node --test src/format-greeting.test.js" > verify.yaml
+npx -p @jeger-ai/opengantry gantry adapt --from lights-on plans/format-greeting.md --step 1.1 \
+  --check "node --test src/format-greeting.test.js" --out verify.yaml
 ```
 
 - The listed files are `allowed_paths`. Without `--step`, every step of the plan counts.
-- `.claude/` (what holds the run), lockfiles, `plans/` and `verify.yaml` are `forbidden_paths`, whatever a step says.
+- `.claude/` (what holds the run), `.gitagent/`, lockfiles, `plans/` and `verify.yaml` are `forbidden_paths`, whatever a step says.
 - Commit `verify.yaml` before the step runs. `gantry-verify` reads a committed contract from the base commit, so a
   worker that edits it changes nothing about how it is judged.
 - **A step that may split a file** (a worker that is expected to create unlisted files) gets one more line instead of
@@ -98,8 +99,8 @@ node plan-to-verify.mjs plans/format-greeting.md --step 1.1 --check "node --test
   anywhere else still fail, and the allowance is in the committed contract for review. The result lists every changed
   path, so the extra files are on the record.
 
-CI runs [`ci-check-boundary.sh`](ci-check-boundary.sh). Until `@jeger-ai/opengantry-cage` and
-`@jeger-ai/opengantry-verify` 4.0.0 are on npm, that job builds OpenGantry from `main`.
+CI runs [`ci-check-boundary.sh`](ci-check-boundary.sh) against the published `@jeger-ai/opengantry-cage`,
+`@jeger-ai/opengantry-verify` and `@jeger-ai/opengantry` 4.x.
 
 ## Use it on your own agent
 

@@ -5,7 +5,7 @@
 #   CAGE="node ../opengantry/dist/cli/index.js cage" ./demo.sh
 set -uo pipefail
 cd "$(dirname "$0")"
-CAGE="${CAGE:-npx -y -p @jeger-ai/opengantry@^3.8.0 gantry cage}"
+CAGE="${CAGE:-npx -y -p @jeger-ai/opengantry@^4 gantry cage}"
 # Keep npm's own notices (update banner, engine warnings) out of the recording.
 export npm_config_update_notifier=false npm_config_loglevel=error
 step() { printf '\n\033[1m$ %s\033[0m\n' "$1"; sleep "${DEMO_PAUSE:-1}"; }
