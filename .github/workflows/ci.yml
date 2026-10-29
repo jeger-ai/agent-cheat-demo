@@ -24,9 +24,11 @@ jobs:
       - name: cage and verify keep the worker inside the plan
         run: ./ci-check-boundary.sh
       - name: the plain-language story still matches the tools' output
+        # The log goes outside the checkout: the demo's worker commits every file in it.
         run: |
-          STORY_PAUSE=0 ./story.sh | sed 's/\x1b\[[0-9;]*m//g' | tee story.out
-          grep -q '8 changes outside the plan, put back automatically' story.out
-          grep -q 'kept: src/format-greeting.js src/format-greeting.test.js' story.out
-          grep -q '8 files outside the plan' story.out
-          grep -q 'commit blocked (exit 1)' story.out
+          out="$RUNNER_TEMP/story.out"
+          STORY_PAUSE=0 ./story.sh | sed 's/\x1b\[[0-9;]*m//g' | tee "$out"
+          grep -q '8 changes outside the plan, put back automatically' "$out"
+          grep -qE 'kept: src/format-greeting.js src/format-greeting.test.js *$' "$out"
+          grep -q '8 files outside the plan' "$out"
+          grep -q 'commit blocked (exit 1)' "$out"
